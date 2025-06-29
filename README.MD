@@ -93,22 +93,8 @@ The CCTNS Copilot Engine enables police officers to query the CCTNS database usi
 └─────────────────┘    └──────────────────┘
 ```
 
-## 📚 API Usage
 
-### Voice Query
-```bash
-curl -X POST "http://localhost:8000/api/voice/transcribe" \
-     -H "Content-Type: multipart/form-data" \
-     -F "file=@audio.wav" \
-     -F "language=te"
-```
 
-### Text Query
-```bash
-curl -X POST "http://localhost:8000/api/query/process" \
-     -H "Content-Type: application/json" \
-     -d '{"text": "Show crimes in Guntur district"}'
-```
 
 ## 🎮 Example Queries
 
@@ -116,44 +102,8 @@ curl -X POST "http://localhost:8000/api/query/process" \
 - **Telugu**: "గుంటూర్ జిల్లాలో మొత్తం నేరాలు చూపించు"
 - **Hindi**: "गुंटूर जिले में कुल अपराध दिखाएं"
 
-## 📱 Mobile Apps
 
-### Flutter App
-```bash
-cd mobile/flutter
-flutter pub get
-flutter run
-```
 
-### React Native App
-```bash
-cd mobile/react-native
-npm install
-npx react-native run-android
-```
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-pytest
-
-# Run specific test categories
-pytest tests/test_models.py      # Model tests
-pytest tests/test_api.py         # API tests
-pytest tests/test_integration.py # Integration tests
-```
-
-## 📊 Evaluation Criteria
-
-The system is evaluated on:
-
-1. **Schema Understanding** (25%): Accuracy in table mapping and foreign keys
-2. **SQL Generation** (25%): Correctness of generated SQL queries
-3. **Execution & Results** (20%): Successful database execution
-4. **UI & Presentation** (15%): Clear result display and metadata
-5. **Visualization** (10%): Relevant charts and graphs
-6. **Conversational Follow-up** (5%): Context preservation
 
 ## 🔧 Configuration
 
@@ -172,24 +122,6 @@ The system supports the standard CCTNS schema:
 - `CRIME_TYPE_MASTER`
 - `FIR`
 - `ARREST`
-
-## 🚢 Deployment
-
-### Production Deployment
-```bash
-./scripts/deploy.sh
-```
-
-### Docker Deployment
-```bash
-docker build -t cctns-copilot .
-docker run -p 8000:8000 -e ORACLE_CONNECTION_STRING="..." cctns-copilot
-```
-
-### Kubernetes Deployment
-```bash
-kubectl apply -f k8s/
-```
 
 ## 🤝 Contributing
 
@@ -215,7 +147,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For technical support or questions:
 - Create an issue on GitHub
-- Email: support@cctns-copilot.org
+- Email: dineshjnld22@gmail.com
 - Documentation: [docs/](docs/)
 
 ---
