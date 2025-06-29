@@ -68,7 +68,7 @@ The CCTNS Copilot Engine enables police officers to query the CCTNS database usi
    ```
 
 8. **Access the application**
-   - Web Interface: http://localhost:8000
+   - Web Interface: http://localhost:8000/ui
    - API Documentation: http://localhost:8000/docs
    - Health Check: http://localhost:8000/api/health
 
