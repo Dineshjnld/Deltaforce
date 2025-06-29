@@ -155,62 +155,160 @@ cctns_schema:
   database_type: "oracle"
   schema_version: "2.0"
   
-  # Master Tables
   tables:
-    - name: "DISTRICT_MASTER"
+    # Master Tables
+    - name: "M_STATE"
       type: "master"
-      columns: ["district_id", "district_code", "district_name", "state_code", "created_date"]
-      primary_key: "district_id"
-      description: "District master data for administrative divisions"
-      
-    - name: "STATION_MASTER"
+      columns: ["state_cd", "lang_cd", "state", "official_lang_cd", "record_status", "last_updated_on", "state_veh_reg_cd"]
+      primary_key: "state_cd"
+      description: "Stores master information about Indian States."
+    - name: "M_DISTRICT"
       type: "master"
-      columns: ["station_id", "station_name", "station_code", "district_id", "latitude", "longitude"]
-      primary_key: "station_id"
-      foreign_keys: 
-        - column: "district_id"
-          references: "DISTRICT_MASTER.district_id"
-      description: "Police station master data"
-      
-    - name: "OFFICER_MASTER"
-      type: "master"
-      columns: ["officer_id", "officer_name", "rank", "badge_number", "station_id", "mobile_number"]
-      primary_key: "officer_id"
+      columns: ["district_cd", "lang_cd", "state_cd", "district", "record_status", "last_updated_on", "dist_short_form"]
+      primary_key: "district_cd"
       foreign_keys:
-        - column: "station_id"
-          references: "STATION_MASTER.station_id"
-      description: "Police officer master data"
-      
-    - name: "CRIME_TYPE_MASTER"
+        - column: "state_cd"
+          references: "M_STATE.state_cd"
+      description: "Stores master information about Districts within States."
+    - name: "M_POLICE_UNITS"
       type: "master"
-      columns: ["crime_type_id", "crime_code", "crime_description", "ipc_section", "severity_level"]
-      primary_key: "crime_type_id"
-      description: "Crime type classifications and IPC sections"
-      
+      columns: ["unit_cd", "lang_cd", "state_cd", "district_cd", "unit_name", "unit_type_cd", "record_status", "latitude", "longitude", "locality", "street_road_no", "pincode"]
+      primary_key: "unit_cd"
+      foreign_keys:
+        - column: "state_cd"
+          references: "M_STATE.state_cd"
+        - column: "district_cd"
+          references: "M_DISTRICT.district_cd"
+      description: "Contains master data about police units (stations, offices) within the districts."
+    - name: "M_CRIME_CLASS"
+      type: "master"
+      columns: ["crime_class_cd", "lang_cd", "crime_class", "record_status", "last_updated_on"]
+      primary_key: "crime_class_cd"
+      description: "Stores crime classification master details (e.g., Bodily Offence, Crime against Women)."
+    - name: "M_MAJOR_HEAD"
+      type: "master"
+      columns: ["major_head_code", "lang_cd", "major_head", "record_status", "last_updated_on"]
+      primary_key: "major_head_code"
+      description: "Stores master data about major heads of crime (e.g., Murder For Gain)."
+    - name: "M_MINOR_HEAD"
+      type: "master"
+      columns: ["minor_head_cd", "lang_cd", "major_head_code", "minor_head", "record_status", "last_updated_on"]
+      primary_key: "minor_head_cd"
+      foreign_keys:
+        - column: "major_head_code"
+          references: "M_MAJOR_HEAD.major_head_code"
+      description: "Stores master data about minor heads linked to major heads (e.g., Attempt To Commit under a major head)."
+    - name: "M_ACT"
+      type: "master"
+      columns: ["act_cd", "lang_cd", "act_long", "act_short", "record_status", "last_updated_on", "amendment_year"]
+      primary_key: "act_cd"
+      description: "Stores master information about Acts (e.g., THE BHARATIYA NYAYA SANHITA (BNS), 2023)."
+    - name: "M_SECTION"
+      type: "master"
+      columns: ["section_cd", "lang_cd", "section_code", "act_sec_cd", "section", "short_desc", "description", "offence", "punishment", "isvalid", "ispunishable", "isbailable", "iscognizable", "isgrave", "record_status", "last_updated_on"]
+      primary_key: "section_cd"
+      foreign_keys:
+        - column: "act_sec_cd" # This column in M_SECTION refers to act_cd in M_ACT
+          references: "M_ACT.act_cd"
+      description: "Stores master information about law sections under various Acts."
+    - name: "M_PERSON_TYPES"
+      type: "master"
+      columns: ["person_type_cd", "lang_cd", "person_type", "record_status", "last_updated_on", "is_req_for_cis"]
+      primary_key: "person_type_cd"
+      description: "Stores master information about person types (e.g., Complainant, Accused, Victim)."
+    - name: "M_MASTER_DATA" # Generic master table for various codes
+      type: "master"
+      columns: ["master_cd", "master_type_cd", "master_parent_cd", "lang_cd", "master_value", "is_active", "cas_master_cd", "record_status", "last_updated_on"]
+      primary_key: "master_cd"
+      description: "Generic master table for configurable data (e.g., Gender, Nationality, Occupation, FIR Status, Grave Type codes and their values)."
+
     # Transaction Tables
-    - name: "FIR"
+    - name: "T_FIR_REGISTRATION"
       type: "transaction"
-      columns: ["fir_id", "fir_number", "district_id", "station_id", "crime_type_id", "incident_date", "report_date", "status", "complainant_name"]
-      primary_key: "fir_id"
+      columns: ["fir_reg_num", "petition_id", "lang_cd", "state_cd", "district_cd", "ps_cd", "fir_srno", "reg_year", "reg_dt", "fir_action", "gd_num", "gd_entry_dt", "crime_class_cd", "oth_crime_class", "grave_type_cd", "nature_of_offence", "prop_involve_or_not_chk", "no_accused_chk", "unknown_accused_chk", "compl_src", "inform_type", "inform_recv_dt", "delay_reason_compl", "persons_dead_count", "seriously_hurt_count", "simply_hurt_count", "property_value", "action_taken_cd", "assigned_io_cd", "fir_status", "is_fir_secret", "fir_reg_officer_cd", "record_status", "record_created_on", "fir_contents", "brief_facts_lang", "victim_flg_check", "no_of_victims_entrd", "irad_accdnt_id"]
+      primary_key: "fir_reg_num"
       foreign_keys:
-        - column: "district_id"
-          references: "DISTRICT_MASTER.district_id"
-        - column: "station_id"
-          references: "STATION_MASTER.station_id"
-        - column: "crime_type_id"
-          references: "CRIME_TYPE_MASTER.crime_type_id"
-      description: "First Information Report records"
-      
-    - name: "ARREST"
+        - column: "state_cd"
+          references: "M_STATE.state_cd"
+        - column: "district_cd"
+          references: "M_DISTRICT.district_cd"
+        - column: "ps_cd"
+          references: "M_POLICE_UNITS.unit_cd"
+        - column: "crime_class_cd"
+          references: "M_CRIME_CLASS.crime_class_cd"
+        - column: "grave_type_cd" # Refers to M_MASTER_DATA where master_type_cd might be for grave types
+          references: "M_MASTER_DATA.master_cd"
+        - column: "fir_status" # Refers to M_MASTER_DATA where master_type_cd might be for FIR statuses
+          references: "M_MASTER_DATA.master_cd"
+      description: "Primary table for FIR Registration, containing all metadata related to registered FIRs."
+    - name: "T_FIR_ACT_SECTION"
       type: "transaction"
-      columns: ["arrest_id", "fir_id", "officer_id", "arrested_person_name", "arrest_date", "arrest_location"]
-      primary_key: "arrest_id"
+      columns: ["fir_act_srno", "lang_cd", "fir_reg_num", "act_cd", "section_cd", "read_with_flg", "fir_alter_status", "record_status", "record_created_on", "module_name", "operation_flag"]
+      primary_key: "fir_act_srno" # DDL mentions (LANG_CD, FIR_ACT_SRNO) as PK but schema explanation implies FIR_ACT_SRNO
       foreign_keys:
-        - column: "fir_id"
-          references: "FIR.fir_id"
-        - column: "officer_id"
-          references: "OFFICER_MASTER.officer_id"
-      description: "Arrest records linked to FIRs"
+        - column: "fir_reg_num"
+          references: "T_FIR_REGISTRATION.fir_reg_num"
+        - column: "act_cd"
+          references: "M_ACT.act_cd"
+        - column: "section_cd"
+          references: "M_SECTION.section_cd"
+      description: "Links FIRs to relevant legal Acts and Sections applied."
+    - name: "T_FIR_MAJOR_MINOR_HEADS"
+      type: "transaction"
+      columns: ["fir_mjmn_srno", "lang_cd", "fir_reg_num", "major_head_code", "oth_major_head", "minor_head_cd", "fir_alter_status", "record_status", "is_major_primary_chk", "operation_flag"]
+      primary_key: "fir_mjmn_srno"
+      foreign_keys:
+        - column: "fir_reg_num"
+          references: "T_FIR_REGISTRATION.fir_reg_num"
+        - column: "major_head_code"
+          references: "M_MAJOR_HEAD.major_head_code"
+        - column: "minor_head_cd"
+          references: "M_MINOR_HEAD.minor_head_cd"
+      description: "Links FIRs to relevant crime major and minor heads."
+    - name: "T_PERSON_INFO"
+      type: "transaction" # Can be considered a core entity, but often involved in transactions
+      columns: ["person_code", "lang_cd", "person_type_cd", "reg_year", "first_name", "middle_name", "last_name", "dob", "age", "father_name", "relation_type_cd", "occupation_cd", "gender_cd", "caste_tribe_cd", "religion_cd", "nationality_cd", "edu_qual_cd", "mobile_1", "email", "injury_type_cd", "state_cd", "district_cd", "ps_cd", "full_name", "living_status_cd", "marital_status_cd", "record_status", "is_known", "alias_name", "fir_num", "bank_acc_num"]
+      primary_key: "person_code"
+      foreign_keys:
+        - column: "person_type_cd"
+          references: "M_PERSON_TYPES.person_type_cd"
+        - column: "occupation_cd" # Refers to M_MASTER_DATA
+          references: "M_MASTER_DATA.master_cd"
+        - column: "gender_cd" # Refers to M_MASTER_DATA
+          references: "M_MASTER_DATA.master_cd"
+        - column: "nationality_cd" # Refers to M_MASTER_DATA
+          references: "M_MASTER_DATA.master_cd"
+        - column: "edu_qual_cd" # Refers to M_MASTER_DATA
+          references: "M_MASTER_DATA.master_cd"
+        - column: "state_cd"
+          references: "M_STATE.state_cd"
+        - column: "district_cd"
+          references: "M_DISTRICT.district_cd"
+        - column: "ps_cd"
+          references: "M_POLICE_UNITS.unit_cd"
+        - column: "fir_num" # Link to specific FIR
+          references: "T_FIR_REGISTRATION.fir_reg_num"
+      description: "Captures comprehensive details of persons involved in FIRs (victims, accused, complainants, etc.)."
+    - name: "T_FIR_COMPLAINANT_INFO"
+      type: "transaction"
+      columns: ["compl_srno", "fir_reg_num", "lang_cd", "time_delay_cd", "person_code", "victim_complainant_chk", "record_status"] # Assuming compl_srno from explanation
+      primary_key: "compl_srno" # Based on schema explanation, not directly in DDL as PK
+      foreign_keys:
+        - column: "fir_reg_num"
+          references: "T_FIR_REGISTRATION.fir_reg_num"
+        - column: "person_code"
+          references: "T_PERSON_INFO.person_code"
+      description: "Captures details of complainants linked to an FIR."
+    - name: "T_ACCUSED_INFO"
+      type: "transaction"
+      columns: ["accused_srno", "lang_cd", "fir_reg_num", "person_code", "accused_type_flg", "is_accused_police", "acc_police_cd", "yet_to_be_arrested", "accused_known", "accused_suspect", "accused_status_cd", "is_juvenile", "chrgsht_or_not", "record_status", "arrest_surrend", "photo"]
+      primary_key: "accused_srno"
+      foreign_keys:
+        - column: "fir_reg_num"
+          references: "T_FIR_REGISTRATION.fir_reg_num"
+        - column: "person_code"
+          references: "T_PERSON_INFO.person_code"
+      description: "Contains detailed information about the accused individuals involved in FIRs."
 
 # Police Terminology and Corrections
 police_terminology:
